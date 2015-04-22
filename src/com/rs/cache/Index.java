@@ -55,7 +55,8 @@ public class Index implements Closeable {
 
 
     public boolean write(int fileId, ByteBuffer data, boolean overwrite) {
-        int fileSize = data.capacity();
+        data.position(0);
+        int fileSize = data.remaining();
         int currentSector;
         try {
             if (overwrite) {
@@ -102,8 +103,9 @@ public class Index implements Closeable {
                 }
 
                 int currentBlockLength = remainder > Sector.BLOCK_SIZE ? Sector.BLOCK_SIZE : remainder;
-                data.limit(data.position() + currentBlockLength);
-                Sector currentSectorData = new Sector(fileId, chunk, nextSector, this.getId(), data);
+                byte[] dataToWrite = new byte[currentBlockLength];
+                data.get(dataToWrite, 0, currentBlockLength);
+                Sector currentSectorData = new Sector(fileId, chunk, nextSector, this.getId(), ByteBuffer.wrap(dataToWrite));
                 cacheChannel.write(currentSectorData.toByteBuffer(), currentSector * Sector.TOTAL_SIZE);
                 remainder -= currentBlockLength;
                 currentSector = nextSector;
@@ -153,7 +155,7 @@ public class Index implements Closeable {
             return fileData;
         } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException("BAD READ v2");
+            throw new RuntimeException("Unable to read file!");
         }
     }
 
