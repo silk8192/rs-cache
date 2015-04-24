@@ -7,8 +7,8 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * Controls all access to the cache.
@@ -45,6 +45,20 @@ public class Cache implements Closeable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Constructs a new cache
+     * @param cachePath
+     * @param indexFileCount The number of indices to create
+     */
+    public static Cache constructCache(Path cachePath, int indexFileCount) throws IOException {
+        cachePath.toFile().mkdir();
+        Paths.get(cachePath.toString(), "main_file_cache.dat2").toFile().createNewFile();
+        for(int i = 0; i < indexFileCount; i++) {
+            Paths.get(cachePath.toString(), "main_file_cache.idx" + i).toFile().createNewFile();
+        }
+        return new Cache(cachePath);
     }
 
     public HashMap<Integer, Index> getIndices() {
